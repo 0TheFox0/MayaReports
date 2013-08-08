@@ -13,7 +13,7 @@
 #include "detailsection.h"
 #include "pageheadersection.h"
 
-namespace Paper_size {
+/*namespace Paper_size {
 
 struct _size {
         double width;
@@ -21,7 +21,7 @@ struct _size {
     };
 
     _size StandarSizes [];
-}
+}*/
 
 class Paper :public QObject, public QGraphicsRectItem
 {

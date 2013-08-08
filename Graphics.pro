@@ -3,10 +3,10 @@
 # Project created by QtCreator 2013-07-21T18:08:34
 #
 #-------------------------------------------------
-
 QT       += core gui printsupport xml sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
 
 TARGET = Graphics
 TEMPLATE = app

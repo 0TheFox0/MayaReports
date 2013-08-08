@@ -1,7 +1,12 @@
 #include "paper.h"
 #include "sectioneditordlg.h"
-using namespace Paper_size;
-_size Paper_size::StandarSizes [] = {
+//using namespace Paper_size;
+struct _size {
+        double width;
+        double heigth;
+    };
+
+_size StandarSizes [] = {
     {841 , 1189},   {594 , 841},    {420 , 594},    {297 , 420},
     {210 , 297},    {148 , 210},    {105 , 148},    {74 , 105},
     {52 , 74},      {37 , 52},      {1000 , 1414},  {707 , 1000},
@@ -294,9 +299,9 @@ void Paper::setSize(_Sizes siz, double w, double h, _Orientacion o)
     if(siz != QPrinter::Custom)
     {
         if(o== Retrato)
-            this->setSize(Paper_size::StandarSizes[siz].width/10 , Paper_size::StandarSizes[siz].heigth/10);
+            this->setSize(StandarSizes[siz].width/10 , StandarSizes[siz].heigth/10);
         else
-            this->setSize(Paper_size::StandarSizes[siz].heigth/10 , Paper_size::StandarSizes[siz].width/10);
+            this->setSize(StandarSizes[siz].heigth/10 , StandarSizes[siz].width/10);
     }
 }
 

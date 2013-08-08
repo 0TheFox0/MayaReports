@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
     scene(this),
     view(this)
 {
+    render = 0;
     ui->setupUi(this);
     view.setScene(&scene);
     this->setCentralWidget(&view);
@@ -53,7 +54,8 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
-    render->deleteLater();
+    if(render)
+        delete render;
 }
 
 void MainWindow::element_toggled(bool arg1)
