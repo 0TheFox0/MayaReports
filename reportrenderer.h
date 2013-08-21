@@ -53,6 +53,7 @@ private:
 
     QString ColorString(QColor c);
     QColor  ColorFromString(QString s );
+    QString applyFormato(QString in , int formato);
 
     enum _Orientacion { Vertical , Horizontal };
     enum _Aling { Left , Center , Rigth };

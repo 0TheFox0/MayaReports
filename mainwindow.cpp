@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     gr.setHostName("localhost");
     gr.setUserName("root");
     gr.setPassword("marco");
-    gr.setDatabaseName("grupotesting");
+    gr.setDatabaseName("grupoimport");
     gr.open();
     QSqlDatabase em = QSqlDatabase::addDatabase("QMYSQL","empresa");
     em.setHostName("localhost");
@@ -142,20 +142,17 @@ void MainWindow::on_actionVista_Previa_triggered()
   //  bool error;
 
     QDomDocument doc = paper.preview();
-    QThread * thread = new QThread(this);
     render = new ReportRenderer();
 
     render->setPrinter(printer);
     render->setDocIn(doc);
+    QMap<QString,QString> c;
+    c["Empresa.cab_fac"] = "id = 1";
+    c["Empresa.lin_fac"] = "id_cab = 1";
+    render->setQueryClausules(c);
 
   //  render->moveToThread(thread);
     QtConcurrent::run(render, &ReportRenderer::PreRender);
-  //  connect(thread,SIGNAL(started()),render,SLOT(PreRender()));
-  //  connect(render, SIGNAL(end()), thread, SLOT(quit()));
-//    connect(thread,SIGNAL(finished()),pDlg,SLOT(deleteLater()));
-//    connect(thread,SIGNAL(finished()),thread,SLOT(deleteLater()));
-//    connect(thread,SIGNAL(finished()),this,SLOT(previewReady()));
-//    thread->start();
     connect(render,SIGNAL(end()),pDlg,SLOT(deleteLater()));
     connect(render,SIGNAL(end()),this,SLOT(previewReady()));
 }

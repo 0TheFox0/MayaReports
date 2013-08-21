@@ -170,6 +170,14 @@ QDomDocument ReportRenderer::render(QPrinter* printer ,QDomDocument in ,QMap<QSt
         if(i!=pages.size()-1)
             printer->newPage();
     }*/
+
+    QFile f("/home/arcnexus/rep.xml");
+    if(f.open(QFile::WriteOnly))
+    {
+        QTextStream t(&f);
+        m_doc.save(t,4);
+    }
+    f.close();
     return m_doc;
 }
 
@@ -376,17 +384,17 @@ QDomDocument ReportRenderer::preRender(QDomDocument in,QMap<QString,QString> que
             if(secEle.tagName() == "Size")
             {
                 usable =  Paper::cmToPx(secEle.attribute("h").toDouble());
-                root.setAttribute("h",secEle.attribute("h").toDouble());
-                root.setAttribute("w",secEle.attribute("w").toDouble());
+                root.setAttribute("h",secEle.attribute("h"));
+                root.setAttribute("w",secEle.attribute("w"));
             }
             else if(secEle.tagName() == "Margin")
             {
                 usable -= Paper::cmToPx(secEle.attribute("top").toDouble());
                 usable -= Paper::cmToPx(secEle.attribute("bottom").toDouble());
-                root.setAttribute("my",Paper::cmToPx(secEle.attribute("top").toDouble()));
-                root.setAttribute("mx",Paper::cmToPx(secEle.attribute("left").toDouble()));
-                root.setAttribute("usable",usable);
-                root.setAttribute("mr",Paper::cmToPx(secEle.attribute("left").toDouble()));
+                root.setAttribute("my",QString::number(Paper::cmToPx(secEle.attribute("top").toDouble()), 'f', 2));
+                root.setAttribute("mx",QString::number(Paper::cmToPx(secEle.attribute("left").toDouble()), 'f', 2));
+                root.setAttribute("usable",QString::number(usable, 'f', 2));
+                root.setAttribute("mr",QString::number(Paper::cmToPx(secEle.attribute("left").toDouble()), 'f', 2));
             }
             else if(secEle.tagName() == "Section")
             {
@@ -507,16 +515,21 @@ QDomDocument ReportRenderer::preRender(QDomDocument in,QMap<QString,QString> que
                             {
                                 ele.setAttribute("id","Label");
                                 QString text = "";
+                                int formato = 0;
                                 QDomNode fieldChild = ele.firstChild();
                                 while (!fieldChild.isNull())
                                 {
                                     QDomElement cEle = fieldChild.toElement();
+                                    if(cEle.tagName() == "formato")
+                                    {
+                                        formato = cEle.attribute("value").toInt();
+                                    }
                                     if(cEle.tagName() == "Sql")// value="General.empresas.nombre"/>)
                                     {
                                         QStringList value = cEle.attribute("value").split(".");
                                         if(value.size()== 3)
                                         {
-                                            text = record.value(value.at(2)).toString();
+                                                text = applyFormato(record.value(value.at(2)).toString(),formato);
                                         }
                                     }
                                     if(cEle.tagName()== "Text")// value=""/>)
@@ -528,13 +541,23 @@ QDomDocument ReportRenderer::preRender(QDomDocument in,QMap<QString,QString> que
                             {
                                 ele.setAttribute("id","Label");
                                 QString text = "";
+                                 int formato = 0;
                                 QDomNode fieldChild = ele.firstChild();
                                 while (!fieldChild.isNull())
                                 {
                                     QDomElement cEle = fieldChild.toElement();
+                                    if(cEle.tagName() == "formato")
+                                    {
+                                        formato = cEle.attribute("value").toInt();
+                                    }
                                     if(cEle.tagName() == "Sql")// value="General.empresas.nombre"/>)
                                     {
-                                        text = getRelationField(cEle.attribute("value"),record);
+                                        QStringList value = cEle.attribute("value").split(".");
+                                        if(value.size()>1)
+                                        {
+                                            QString key = value.at(0) + "." + value.at(1);
+                                            text = applyFormato(getRelationField(cEle.attribute("value"),selects.value(key)),formato);
+                                        }
                                     }
                                     if(cEle.tagName()== "Text")// value=""/>)
                                         cEle.setAttribute("value",text);
@@ -613,16 +636,21 @@ QDomDocument ReportRenderer::preRender(QDomDocument in,QMap<QString,QString> que
                                             {
                                                 ele.setAttribute("id","Label");
                                                 QString text = "";
+                                                int formato = 0;
                                                 QDomNode fieldChild = ele.firstChild();
                                                 while (!fieldChild.isNull())
                                                 {
                                                     QDomElement cEle = fieldChild.toElement();
+                                                    if(cEle.tagName() == "formato")
+                                                    {
+                                                        formato = cEle.attribute("value").toInt();
+                                                    }
                                                     if(cEle.tagName() == "Sql")// value="General.empresas.nombre"/>)
                                                     {
                                                         QStringList value = cEle.attribute("value").split(".");
                                                         if(value.size()== 3)
                                                         {
-                                                            text = iRecord.value(value.at(2)).toString();
+                                                                text = applyFormato(iRecord.value(value.at(2)).toString(),formato);
                                                         }
                                                     }
                                                     if(cEle.tagName()== "Text")// value=""/>)
@@ -634,13 +662,18 @@ QDomDocument ReportRenderer::preRender(QDomDocument in,QMap<QString,QString> que
                                             {
                                                 ele.setAttribute("id","Label");
                                                 QString text = "";
+                                                 int formato = 0;
                                                 QDomNode fieldChild = ele.firstChild();
                                                 while (!fieldChild.isNull())
                                                 {
                                                     QDomElement cEle = fieldChild.toElement();
+                                                    if(cEle.tagName() == "formato")
+                                                    {
+                                                        formato = cEle.attribute("value").toInt();
+                                                    }
                                                     if(cEle.tagName() == "Sql")// value="General.empresas.nombre"/>)
                                                     {
-                                                        text = getRelationField(cEle.attribute("value"),record);
+                                                       text = applyFormato(getRelationField(cEle.attribute("value"),record),formato);
                                                     }
                                                     if(cEle.tagName()== "Text")// value=""/>)
                                                         cEle.setAttribute("value",text);
@@ -688,16 +721,21 @@ QDomDocument ReportRenderer::preRender(QDomDocument in,QMap<QString,QString> que
                                 {
                                     ele.setAttribute("id","Label");
                                     QString text = "";
+                                    int formato = 0;
                                     QDomNode fieldChild = ele.firstChild();
                                     while (!fieldChild.isNull())
                                     {
                                         QDomElement cEle = fieldChild.toElement();
+                                        if(cEle.tagName() == "formato")
+                                        {
+                                            formato = cEle.attribute("value").toInt();
+                                        }
                                         if(cEle.tagName() == "Sql")// value="General.empresas.nombre"/>)
                                         {
                                             QStringList value = cEle.attribute("value").split(".");
                                             if(value.size()== 3)
                                             {
-                                                text = record.value(value.at(2)).toString();
+                                                    text = applyFormato(record.value(value.at(2)).toString(),formato);
                                             }
                                         }
                                         if(cEle.tagName()== "Text")// value=""/>)
@@ -709,13 +747,18 @@ QDomDocument ReportRenderer::preRender(QDomDocument in,QMap<QString,QString> que
                                 {
                                     ele.setAttribute("id","Label");
                                     QString text = "";
+                                     int formato = 0;
                                     QDomNode fieldChild = ele.firstChild();
                                     while (!fieldChild.isNull())
                                     {
                                         QDomElement cEle = fieldChild.toElement();
+                                        if(cEle.tagName() == "formato")
+                                        {
+                                            formato = cEle.attribute("value").toInt();
+                                        }
                                         if(cEle.tagName() == "Sql")// value="General.empresas.nombre"/>)
                                         {
-                                            text = getRelationField(cEle.attribute("value"),record);
+                                            text = applyFormato(getRelationField(cEle.attribute("value"),record),formato);
                                         }
                                         if(cEle.tagName()== "Text")// value=""/>)
                                             cEle.setAttribute("value",text);
@@ -757,16 +800,21 @@ QDomDocument ReportRenderer::preRender(QDomDocument in,QMap<QString,QString> que
                             {
                                 ele.setAttribute("id","Label");
                                 QString text = "";
+                                int formato = 0;
                                 QDomNode fieldChild = ele.firstChild();
                                 while (!fieldChild.isNull())
                                 {
                                     QDomElement cEle = fieldChild.toElement();
+                                    if(cEle.tagName() == "formato")
+                                    {
+                                        formato = cEle.attribute("value").toInt();
+                                    }
                                     if(cEle.tagName() == "Sql")// value="General.empresas.nombre"/>)
                                     {
                                         QStringList value = cEle.attribute("value").split(".");
                                         if(value.size()== 3)
                                         {
-                                            text = record.value(value.at(2)).toString();
+                                                text = applyFormato(record.value(value.at(2)).toString(),formato);
                                         }
                                     }
                                     if(cEle.tagName()== "Text")// value=""/>)
@@ -778,13 +826,18 @@ QDomDocument ReportRenderer::preRender(QDomDocument in,QMap<QString,QString> que
                             {
                                 ele.setAttribute("id","Label");
                                 QString text = "";
+                                 int formato = 0;
                                 QDomNode fieldChild = ele.firstChild();
                                 while (!fieldChild.isNull())
                                 {
                                     QDomElement cEle = fieldChild.toElement();
+                                    if(cEle.tagName() == "formato")
+                                    {
+                                        formato = cEle.attribute("value").toInt();
+                                    }
                                     if(cEle.tagName() == "Sql")// value="General.empresas.nombre"/>)
                                     {
-                                        text = getRelationField(cEle.attribute("value"),record);
+                                        text = applyFormato(getRelationField(cEle.attribute("value"),record),formato);
                                     }
                                     if(cEle.tagName()== "Text")// value=""/>)
                                         cEle.setAttribute("value",text);
@@ -1456,17 +1509,23 @@ QDomNode ReportRenderer::startPage(QDomDocument doc, bool pageHeader, QDomNode p
             {
                 ele.setAttribute("id","Label");
                 QString text = "";
+                int formato = 0;
                 QDomNode fieldChild = ele.firstChild();
                 while (!fieldChild.isNull())
                 {
                     QDomElement cEle = fieldChild.toElement();
+                    if(cEle.tagName() == "formato")
+                    {
+                        formato = cEle.attribute("value").toInt();
+                    }
                     if(cEle.tagName() == "Sql")// value="General.empresas.nombre"/>)
                     {
                         QStringList value = cEle.attribute("value").split(".");
                         if(value.size()== 3)
                         {
                             QString key = value.at(0) + "." + value.at(1);
-                            text = selects.value(key).value(value.at(2)).toString();
+                            QString text0 = selects.value(key).value(value.at(2)).toString();
+                            text = applyFormato(text0,formato);
                         }
                     }
                     if(cEle.tagName()== "Text")// value=""/>)
@@ -1478,17 +1537,22 @@ QDomNode ReportRenderer::startPage(QDomDocument doc, bool pageHeader, QDomNode p
             {
                 ele.setAttribute("id","Label");
                 QString text = "";
+                 int formato = 0;
                 QDomNode fieldChild = ele.firstChild();
                 while (!fieldChild.isNull())
                 {
                     QDomElement cEle = fieldChild.toElement();
+                    if(cEle.tagName() == "formato")
+                    {
+                        formato = cEle.attribute("value").toInt();
+                    }
                     if(cEle.tagName() == "Sql")// value="General.empresas.nombre"/>)
                     {
                         QStringList value = cEle.attribute("value").split(".");
                         if(value.size()>1)
                         {
                             QString key = value.at(0) + "." + value.at(1);
-                            text = getRelationField(cEle.attribute("value"),selects.value(key));
+                            text = applyFormato(getRelationField(cEle.attribute("value"),selects.value(key)),formato);
                         }
                     }
                     if(cEle.tagName()== "Text")// value=""/>)
@@ -1532,17 +1596,23 @@ QDomNode ReportRenderer::startPage(QDomDocument doc, bool pageHeader, QDomNode p
             {
                 ele.setAttribute("id","Label");
                 QString text = "";
+                int formato = 0;
                 QDomNode fieldChild = ele.firstChild();
                 while (!fieldChild.isNull())
                 {
                     QDomElement cEle = fieldChild.toElement();
+                    if(cEle.tagName() == "formato")
+                    {
+                        formato = cEle.attribute("value").toInt();
+                    }
                     if(cEle.tagName() == "Sql")// value="General.empresas.nombre"/>)
                     {
                         QStringList value = cEle.attribute("value").split(".");
                         if(value.size()== 3)
                         {
                             QString key = value.at(0) + "." + value.at(1);
-                            text = selects.value(key).value(value.at(2)).toString();
+                            QString text0 = selects.value(key).value(value.at(2)).toString();
+                            text = applyFormato(text0,formato);
                         }
                     }
                     if(cEle.tagName()== "Text")// value=""/>)
@@ -1554,17 +1624,22 @@ QDomNode ReportRenderer::startPage(QDomDocument doc, bool pageHeader, QDomNode p
             {
                 ele.setAttribute("id","Label");
                 QString text = "";
+                 int formato = 0;
                 QDomNode fieldChild = ele.firstChild();
                 while (!fieldChild.isNull())
                 {
                     QDomElement cEle = fieldChild.toElement();
+                    if(cEle.tagName() == "formato")
+                    {
+                        formato = cEle.attribute("value").toInt();
+                    }
                     if(cEle.tagName() == "Sql")// value="General.empresas.nombre"/>)
                     {
                         QStringList value = cEle.attribute("value").split(".");
                         if(value.size()>1)
                         {
                             QString key = value.at(0) + "." + value.at(1);
-                            text = getRelationField(cEle.attribute("value"),selects.value(key));
+                            text = applyFormato(getRelationField(cEle.attribute("value"),selects.value(key)),formato);
                         }
                     }
                     if(cEle.tagName()== "Text")// value=""/>)
@@ -1613,17 +1688,23 @@ void ReportRenderer::parseFooters(QDomNode RFooter, bool haveRfooter, QDomNode P
             {
                 ele.setAttribute("id","Label");
                 QString text = "";
+                int formato = 0;
                 QDomNode fieldChild = ele.firstChild();
                 while (!fieldChild.isNull())
                 {
                     QDomElement cEle = fieldChild.toElement();
+                    if(cEle.tagName() == "formato")
+                    {
+                        formato = cEle.attribute("value").toInt();
+                    }
                     if(cEle.tagName() == "Sql")// value="General.empresas.nombre"/>)
                     {
                         QStringList value = cEle.attribute("value").split(".");
                         if(value.size()== 3)
                         {
                             QString key = value.at(0) + "." + value.at(1);
-                            text = selects.value(key).value(value.at(2)).toString();
+                            QString text0 = selects.value(key).value(value.at(2)).toString();
+                            text = applyFormato(text0,formato);
                         }
                     }
                     if(cEle.tagName()== "Text")// value=""/>)
@@ -1635,17 +1716,22 @@ void ReportRenderer::parseFooters(QDomNode RFooter, bool haveRfooter, QDomNode P
             {
                 ele.setAttribute("id","Label");
                 QString text = "";
+                 int formato = 0;
                 QDomNode fieldChild = ele.firstChild();
                 while (!fieldChild.isNull())
                 {
                     QDomElement cEle = fieldChild.toElement();
+                    if(cEle.tagName() == "formato")
+                    {
+                        formato = cEle.attribute("value").toInt();
+                    }
                     if(cEle.tagName() == "Sql")// value="General.empresas.nombre"/>)
                     {
                         QStringList value = cEle.attribute("value").split(".");
                         if(value.size()>1)
                         {
                             QString key = value.at(0) + "." + value.at(1);
-                            text = getRelationField(cEle.attribute("value"),selects.value(key));
+                            text = applyFormato(getRelationField(cEle.attribute("value"),selects.value(key)),formato);
                         }
                     }
                     if(cEle.tagName()== "Text")// value=""/>)
@@ -1688,17 +1774,23 @@ void ReportRenderer::parseFooters(QDomNode RFooter, bool haveRfooter, QDomNode P
             {
                 ele.setAttribute("id","Label");
                 QString text = "";
+                int formato = 0;
                 QDomNode fieldChild = ele.firstChild();
                 while (!fieldChild.isNull())
                 {
                     QDomElement cEle = fieldChild.toElement();
+                    if(cEle.tagName() == "formato")
+                    {
+                        formato = cEle.attribute("value").toInt();
+                    }
                     if(cEle.tagName() == "Sql")// value="General.empresas.nombre"/>)
                     {
                         QStringList value = cEle.attribute("value").split(".");
                         if(value.size()== 3)
                         {
                             QString key = value.at(0) + "." + value.at(1);
-                            text = selects.value(key).value(value.at(2)).toString();
+                            QString text0 = selects.value(key).value(value.at(2)).toString();
+                            text = applyFormato(text0,formato);
                         }
                     }
                     if(cEle.tagName()== "Text")// value=""/>)
@@ -1710,17 +1802,22 @@ void ReportRenderer::parseFooters(QDomNode RFooter, bool haveRfooter, QDomNode P
             {
                 ele.setAttribute("id","Label");
                 QString text = "";
+                 int formato = 0;
                 QDomNode fieldChild = ele.firstChild();
                 while (!fieldChild.isNull())
                 {
                     QDomElement cEle = fieldChild.toElement();
+                    if(cEle.tagName() == "formato")
+                    {
+                        formato = cEle.attribute("value").toInt();
+                    }
                     if(cEle.tagName() == "Sql")// value="General.empresas.nombre"/>)
                     {
                         QStringList value = cEle.attribute("value").split(".");
                         if(value.size()>1)
                         {
                             QString key = value.at(0) + "." + value.at(1);
-                            text = getRelationField(cEle.attribute("value"),selects.value(key));
+                            text = applyFormato(getRelationField(cEle.attribute("value"),selects.value(key)),formato);
                         }
                     }
                     if(cEle.tagName()== "Text")// value=""/>)
@@ -1764,6 +1861,63 @@ QColor ReportRenderer::ColorFromString(QString s)
     c.setBlue (l.at(2).toInt());
     c.setAlpha(l.at(3).toInt());
     return c;
+}
+
+QString ReportRenderer::applyFormato(QString in, int formato)
+{
+    /*0 = sin formato
+     *1 = 999.999.999,99
+     *2 = 999,999,999.99
+     *3 = 99999999999,99
+     *4 = 99999999999.99*/
+    if(formato == 0 || formato > 4)
+        return in;
+
+    bool ok;
+    double d = in.toDouble(&ok);
+    if(!ok)
+        return in;
+
+    QString aux = QString::number(d, 'f' , 2); //9999999999.99
+    if(formato == 4)
+        return aux;
+    else if(formato == 3)
+        return aux.replace(".",",");
+    else if(formato == 2)
+    {
+        QString entero = aux.split(".").at(0);
+        QString final;
+        int count = 0;
+        for(int i = entero.size()-1 ; i>= 0 ; i--)
+        {
+            final.prepend(entero.at(i));
+            count++;
+            if(count%3 == 0 && i != 0)
+                final.prepend(",");
+
+        }
+        final.append(".");
+        final.append(aux.split(".").at(1));
+        return final;
+    }
+    else
+    {
+        aux.replace(".",",");//9999999999,99
+        QString entero = aux.split(",").at(0);
+        QString final;
+        int count = 0;
+        for(int i = entero.size()-1 ; i>= 0 ; i--)
+        {
+            final.prepend(entero.at(i));
+            count++;
+            if(count%3 == 0 && i != 0)
+                final.prepend(".");
+
+        }
+        final.append(",");
+        final.append(aux.split(",").at(1));
+        return final;
+    }
 }
 
 QString ReportRenderer::ColorString(QColor c)

@@ -547,10 +547,10 @@ int Paper::save(QString file)
         orientacion.setAttribute("type",this->m_orientacion == Retrato ? "V" : "H");
 
         QDomElement margin = doc.createElement("Margin");
-        margin.setAttribute("top",this->margenSuperior());
-        margin.setAttribute("bottom",this->margenInferior());
-        margin.setAttribute("left",this->margenIzquierdo());
-        margin.setAttribute("rigth",this->margenDerecho());        
+        margin.setAttribute("top",QString::number(this->margenSuperior(), 'f', 2));
+        margin.setAttribute("bottom",QString::number(this->margenInferior(), 'f', 2));
+        margin.setAttribute("left",QString::number(this->margenIzquierdo(), 'f', 2));
+        margin.setAttribute("rigth",QString::number(this->margenDerecho(), 'f', 2));
 
         doc.appendChild(root);
         root.appendChild(paperNode);
@@ -609,10 +609,10 @@ QDomDocument Paper::preview()
     orientacion.setAttribute("type",this->m_orientacion == Retrato ? "V" : "H");
 
     QDomElement margin = doc.createElement("Margin");
-    margin.setAttribute("top",this->margenSuperior());
-    margin.setAttribute("bottom",this->margenInferior());
-    margin.setAttribute("left",this->margenIzquierdo());
-    margin.setAttribute("rigth",this->margenDerecho());
+    margin.setAttribute("top",QString::number(this->margenSuperior(), 'f', 2));
+    margin.setAttribute("bottom",QString::number(this->margenInferior(), 'f', 2));
+    margin.setAttribute("left",QString::number(this->margenIzquierdo(), 'f', 2));
+    margin.setAttribute("rigth",QString::number(this->margenDerecho(), 'f', 2));
 
     doc.appendChild(root);
     root.appendChild(paperNode);
@@ -641,6 +641,17 @@ QDomDocument Paper::preview()
     QDomNode xmlNode = doc.createProcessingInstruction("xml",
                                                        "version=\"1.0\" encoding=\"ISO-8859-1\"");
     doc.insertBefore(xmlNode, doc.firstChild());
+
+
+
+    QFile f("/home/arcnexus/pre.xml");
+    if(f.open(QFile::WriteOnly))
+    {
+        QTextStream t(&f);
+        doc.save(t,4);
+    }
+    f.close();
+
     return doc;
 }
 
