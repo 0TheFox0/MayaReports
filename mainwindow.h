@@ -43,6 +43,8 @@ private slots:
     void on_actionVista_Previa_triggered();
 
     void previewReady();
+    void on_actionBlock_triggered();
+
 private:
     Ui::MainWindow *ui;
     QGraphicsScene scene;

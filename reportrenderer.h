@@ -38,9 +38,9 @@ private:
     QPrintPreviewDialog* dlg;
     QPair<QString, QString> getSql(QString,QMap<QString,QString> queryClausules);
     QString getRelationField(QString s , QSqlRecord r);
-    QDomNode startPage(QDomDocument doc , bool pageHeader , QDomNode pHeaderNode, QMap<QString,QSqlRecord> selects,bool reporHeader = false, QDomNode rHeaderNode = QDomNode());
+    QDomNode startPage(double pageUsable, int RFooterSiz, int RHSiz, int RFootSiz, QDomDocument doc , bool pageHeader , QDomNode pHeaderNode, QMap<QString,QSqlRecord> selects, bool reporHeader = false, QDomNode rHeaderNode = QDomNode());
     void parseFooters(QDomNode RFooter , bool haveRfooter , QDomNode PFooter , bool havePFooter ,QMap<QString,QSqlRecord> selects );
-    QDomDocument preRender(QDomDocument in ,QMap<QString,QString> queryClausules, bool& error);
+    QDomDocument preRender(QPainter *painter, QDomDocument in , QMap<QString,QString> queryClausules, bool& error);
     QDomDocument m_doc;
     QDomDocument DocIn;
     QMap<QString,QString> queryClausules;

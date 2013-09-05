@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     gr.setHostName("localhost");
     gr.setUserName("root");
     gr.setPassword("marco");
-    gr.setDatabaseName("grupoimport");
+    gr.setDatabaseName("grupotestt");
     gr.open();
     QSqlDatabase em = QSqlDatabase::addDatabase("QMYSQL","empresa");
     em.setHostName("localhost");
@@ -151,7 +151,6 @@ void MainWindow::on_actionVista_Previa_triggered()
     c["Empresa.lin_fac"] = "id_cab = 1";
     render->setQueryClausules(c);
 
-  //  render->moveToThread(thread);
     QtConcurrent::run(render, &ReportRenderer::PreRender);
     connect(render,SIGNAL(end()),pDlg,SLOT(deleteLater()));
     connect(render,SIGNAL(end()),this,SLOT(previewReady()));
@@ -162,4 +161,15 @@ void MainWindow::previewReady()
     QPrintPreviewDialog * pre = new QPrintPreviewDialog(render->getPrinter(),this);
     connect(pre, SIGNAL(paintRequested(QPrinter*)), render, SLOT(Print(QPrinter*)));
     pre->show();
+}
+
+void MainWindow::on_actionBlock_triggered()
+{
+    QList<QGraphicsItem*> l =  scene.selectedItems();
+    for(int i = 0;i< l.size(); i++)
+    {
+       Container* c = qgraphicsitem_cast<Container*>(l.at(i));
+       if(c)
+           c->setActive(false);
+    }
 }

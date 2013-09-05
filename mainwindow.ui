@@ -58,6 +58,7 @@
    <addaction name="actionCodeBars"/>
    <addaction name="actionImagen"/>
    <addaction name="separator"/>
+   <addaction name="actionBlock"/>
    <addaction name="actionBorrar"/>
    <addaction name="separator"/>
    <addaction name="actionGuardar"/>
@@ -188,6 +189,11 @@
    </property>
    <property name="text">
     <string>Vista Previa</string>
+   </property>
+  </action>
+  <action name="actionBlock">
+   <property name="text">
+    <string>block</string>
    </property>
   </action>
  </widget>
